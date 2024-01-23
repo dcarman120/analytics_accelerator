@@ -3,6 +3,7 @@
 SELECT --(what fields u want, * if you want everything) (column + column AS derived_column)
 FROM --(what table to reference)
 WHERE --(condition, uses symbols suck as >, <, >=, != )
+GROUP BY --(aggregate data within subsets, such as grouping by account or location)
 ORDER BY --(temporarily sort) DESC (to differ from default ascending)
 LIMIT --(first X rows)
 
@@ -210,35 +211,85 @@ AND o.occured_at LIKE '2015' --AND should be WHERE
 --^ correct syntax should be (WHERE o.occurred_at BETWEEN '01-01-2015' AND '01-01-2016')
 ORDER BY o.occured_at DESC; --adding this DESC ordering is just proper formatting
 
+--Aggregations
+
+--Find the total amount of poster_qty paper ordered in the orders table.
+
+SELECT SUM(poster_qty) AS total_poster_sales
+FROM orders;
+
+--Find the total amount spent on standard_amt_usd and gloss_amt_usd paper for each order in the orders table. This should give a dollar amount for each order in the table.
+
+SELECT standard_amt_usd + gloss_amt_usd AS total_standard_gloss
+FROM orders;
+
+--Find the standard_amt_usd per unit of standard_qty paper. Your solution should use both an aggregation and a mathematical operator.
+
+SELECT SUM(standard_amt_usd)/SUM(standard_qty) AS standard_price_per_unit
+FROM orders;
+
+--When was the earliest order ever placed? You only need to return the date.
+
+SELECT MIN(occured_at)
+FROM orders;
+
+--Try performing the same query as the last question without using an aggregation function. 
+
+SELECT occurred_at 
+FROM orders;
+ORDER BY occurred_at 
+LIMIT 1; --returns 1 row, and since it sorts by ascending by default, it returns the MIN value
+
+--When did the most recent (latest) web_event occur?
+
+SELECT MAX(occured_at)
+FROM web_events;
+
+--Try to perform the result of the previous query without using an aggregation function.
+
+SELECT occured_at
+FROM web_events;
+ORDER BY occurred_at DESC --overrwrites the default ascending with DESC to get the MAX value when sorting instead
+LIMIT 1;
+
+--Find the mean (AVERAGE) amount spent per order on each paper type, as well as the mean amount of each paper type purchased per order. 
+--Your final answer should have 6 values - one for each paper type for the average number of sales, as well as the average amount.
+
+SELECT AVG(standard_qty),
+          AVG(gloss_qty),
+          AVG(poster_qty),
+          AVG(standard_amt_usd),
+          AVG(gloss_amt_usd),
+          AVG(poster_amt_usd),
+FROM orders;
+
+--GROUP BY
+
+--Which account (by name) placed the earliest order? Your solution should have the account name and the date of the order.
+
+
+--Find the total sales in usd for each account. You should include two columns - the total sales for each company's orders in usd and the company name.
+
+
+--Via what channel did the most recent (latest) web_event occur, which account was associated with this web_event? 
+--Your query should return only three values - the date, channel, and account name.
+
+
+--Find the total number of times each type of channel from the web_events was used. 
+--Your final table should have two columns - the channel and the number of times the channel was used.
 
 
 
 
+--Who was the primary contact associated with the earliest web_event? 
 
 
 
+--What was the smallest order placed by each account in terms of total usd. Provide only two columns - the account name and the total usd. Order from smallest dollar amounts to largest.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+--Find the number of sales reps in each region. Your final table should have two columns - the region and the number of sales_reps. Order from fewest reps to most reps.
 
 
 
