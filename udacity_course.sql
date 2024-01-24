@@ -27,7 +27,7 @@ ON orders.account_id = accounts.id; --specifies column on which to merge the two
 SELECT orders.*, accounts.*
 FROM accounts
 JOIN orders
-ON accounts.id = orders.account_id
+ON accounts.id = orders.account_id;
 
 --Try pulling standard_qty, gloss_qty, and poster_qty from the orders table, and the website and the primary_poc from the accounts table.
 
@@ -36,7 +36,7 @@ SELECT orders.standard_qty, orders.gloss_qty,
           accounts.primary_poc
 FROM orders
 JOIN accounts
-ON orders.account_id = accounts.id
+ON orders.account_id = accounts.id;
 
 --Join web_events, accounts, and orders tables
 
@@ -45,7 +45,7 @@ FROM web_events
 JOIN accounts
 ON web_events.account_id = accounts.id --Joins accounts to web_events
 JOIN orders
-ON accounts.id = orders.account_id --Joins orders to accounts
+ON accounts.id = orders.account_id; --Joins orders to accounts
 
 --Alias
 
@@ -54,7 +54,7 @@ JOIN tablename2 t2
 
 Select t1.column1 aliasname, t2.column2 aliasname2
 FROM tablename AS t1
-JOIN tablename2 AS t2 --returns aliasname and aliasname2 instead of t1 t2
+JOIN tablename2 AS t2; --returns aliasname and aliasname2 instead of t1 t2
 
 
 --Provide a table for all the for all web_events associated with account name of Walmart.
@@ -400,27 +400,251 @@ ORDER BY num_accounts;
 SELECT DISTINCT id, name
 FROM sales_reps;
 
+--How many of the sales reps have more than 5 accounts that they manage?
+
+SELECT s.id, s.name, COUNT(*) num_accounts --sales reps' names, id, and count the accounts that they manage
+FROM accounts a
+JOIN sales_reps s
+ON s.id = a.sales_rep_id
+GROUP BY s.id, s.name 
+HAVING COUNT(*) > 5 --having a num_accounts of more than 5
+ORDER BY num_accounts;
+
+--How many accounts have more than 20 orders?
+
+SELECT a.id, a.name, COUNT(*) num_orders
+FROM accounts a
+JOIN orders o
+ON a.id = o.account_id
+GROUP BY a.id, a.name
+HAVING COUNT(*) > 20
+ORDER BY num_orders;
+
+--Which account has the most orders?
+
+SELECT a.id, a.name, COUNT(*) num_orders
+FROM accounts a
+JOIN orders o
+ON a.id = o.account_id
+GROUP BY a.id, a.name
+ORDER BY num_orders DESC --descending, meaning most to least
+LIMIT 1; --first account in descending order has the most orders
+
+--Which accounts spent more than 30,000 usd total across all orders?
+
+SELECT a.id, a.name, SUM(o.total_amt_usd) total_spent --account id, name, and sum of total amount as total spent
+FROM accounts a
+JOIN orders o
+ON a.id = o.account_id
+GROUP BY a.id, a.name
+HAVING SUM(o.total_amt_usd) > 30000 
+ORDER BY total_spent;
+
+--Which accounts spent less than 1,000 usd total across all orders?
+
+SELECT a.id, a.name, SUM(o.total_amt_usd) total_spent
+FROM accounts a
+JOIN orders o
+ON a.id = o.account_id
+GROUP BY a.id, a.name
+HAVING SUM(o.total_amt_usd) < 1000
+ORDER BY total_spent;
+
+--Which account has spent the most with us?
+
+SELECT a.id, a.name, SUM(o.total_amt_usd) total_spent
+FROM accounts a
+JOIN orders o
+ON a.id = o.account_id
+GROUP BY a.id, a.name
+ORDER BY total_spent DESC
+LIMIT 1;
+
+--Which account has spent the least with us?
+
+SELECT a.id, a.name, SUM(o.total_amt_usd) total_spent
+FROM accounts a
+JOIN orders o
+ON a.id = o.account_id
+GROUP BY a.id, a.name
+ORDER BY total_spent
+LIMIT 1;
+
+--Which accounts used facebook as a channel to contact customers more than 6 times?
+
+SELECT a.id, a.name, w.channel, COUNT(*) use_of_channel
+FROM accounts a
+JOIN web_events w
+ON a.id = w.account_id
+GROUP BY a.id, a.name, w.channel
+HAVING COUNT(*) > 6 AND w.channel = 'facebook'
+ORDER BY use_of_channel;
+
+--Which account used facebook most as a channel? 
+
+SELECT a.id, a.name, w.channel, COUNT(*) use_of_channel
+FROM accounts a
+JOIN web_events w
+ON a.id = w.account_id
+WHERE w.channel = 'facebook'
+GROUP BY a.id, a.name, w.channel
+ORDER BY use_of_channel DESC
+LIMIT 1;
+
+--Which channel was most frequently used by most accounts?
+
+SELECT a.id, a.name, w.channel, COUNT(*) use_of_channel
+FROM accounts a
+JOIN web_events w
+ON a.id = w.account_id
+GROUP BY a.id, a.name, w.channel
+ORDER BY use_of_channel DESC
+LIMIT 10;
+
+--DATE_TRUNC truncates dates to a easier to group format such as day, month, quarter, and year
+
+SELECT DATE_PART('dow', occured_at) AS day_of_week, --'dow' stands for day of week
+          acccount_id,
+          occurred_at,
+          total
+FROM demo.orders
+
+SELECT DATE_PART('dow', occured_at) AS day_of_week, --'dow' stands for day of week
+          SUM(total) AS total_qty
+FROM demo.orders
+GROUP BY 1 --1 and 2 identify the columns in the SELECT statement (day_of_week)
+ORDER BY 2 DESC; --1 and 2 identify the columns in the SELECT statement  (total_qty)
 
 
+--Find the sales in terms of total dollars for all orders in each year, ordered from greatest to least. Do you notice any trends in the yearly sales totals?
+
+SELECT DATE_PART('year' occurred_at) ord_year, SUM(total_amt_usd) total_spent
+FROM orders
+GROUP BY 1
+ORDER BY 2 DESC;
+
+--Which month did Parch & Posey have the greatest sales in terms of total dollars? Are all months evenly represented by the dataset?
+
+SELECT DATE_PART('month' occurred_at) ord_month, SUM(total_amt_usd) total_spent
+FROM  orders
+WHERE occurred_at BETWEEN '2014-01-01' AND '2017-01-01'
+GROUP BY 1
+ORDER BY 2 DESC;
 
 
+--Which year did Parch & Posey have the greatest sales in terms of total number of orders? Are all years evenly represented by the dataset?
+
+SELECT DATE_PART('year'occurred_at) ord_year, COUNT(*) total_sales
+FROM orders
+GROUP BY 1
+ORDER BY 2 DESC;
 
 
+--Which month did Parch & Posey have the greatest sales in terms of total number of orders? Are all months evenly represented by the dataset?
+
+SELECT DATE_PART('month' occurred_at) ord_month, COUNT(*) total_sales
+FROM orders
+WHERE occurred_at BETWEEN '2014-01-01' AND '2017-01-01'
+GROUP BY 1
+ORDER BY 2 DESC;
+
+--In which month of which year did Walmart spend the most on gloss paper in terms of dollars?
+
+SELECT DATE_PART('month' occurred_at) ord_date, SUM(o.gloss_amt_usd) tot_spent --month of occurred at AS ord_date, SUM of gloss paper spent AS tot_spent
+FROM orders o 
+JOIN accounts a 
+ON a.id = o.account_id
+WHERE w.channel = "Walmart" --should be a.name (account name = 'Walmart'), you're pulling from the accounts table after all
+GROUP BY 1
+ORDER BY 2
+LIMIT 1; --only care about the largest month
+
+--CASE statements, which go in the SELECT clause, handle IF/THEN logic, rather than arithmetic. 
+--Syntax is CASE WHEN (condition) THEN (result) END AS (name of condition). ELSE can go after THEN and before END for capturing additional values
+
+--Write a query to display for each order, the account ID, total amount of the order, and the level of the order - ‘Large’ or ’Small’ - depending on if the order is $3000 or more, or smaller than $3000.
+
+SELECT account_id,
+          total_amt_usd
+          CASE WHEN total >= 3000 THEN 'Large'
+          CASE WHEN total < 3000 THEN 'Small' END AS order_level --replace second CASE WHEN with ELSE, other than that perfect
+FROM orders;
 
 
+--Write a query to display the number of orders in each of three categories, based on the total number of items in each order. 
+--The three categories are: 'At Least 2000', 'Between 1000 and 2000' and 'Less than 1000'.
+
+SELECT
+          CASE WHEN order_count >= 2000 THEN 'At least 2000'
+          CASE WHEN order_count BETWEEN 1000 AND 2000 THEN 'Between 1k and 2k' --instead of BETWEEN, use arithmetic (total >= 1000 AND total < 2000)
+          CASE WHEN order_count < 1000 THEN 'less than 1k' --change final CASE WHEN statement to ELSE and add END AS statement (ELSE 'Less than 1k' END AS order_category)
+--COUNT(*) AS order_count | should be here to count the number of orders in each category
+FROM orders
+GROUP BY 1;
+
+--We would like to understand 3 different levels of customers based on the amount associated with their purchases. 
+--The top level includes anyone with a Lifetime Value (total sales of all orders) greater than 200,000 usd. The second level is between 200,000 and 100,000 usd. 
+--The lowest level is anyone under 100,000 usd. Provide a table that includes the level associated with each account. 
+--You should provide the account name, the total sales of all orders for the customer, and the level. Order with the top spending customers listed first.
+
+SELECT a.name, SUM(total_amt_usd) total_spent --grab SUM of total money spent AS total_spent
+          CASE WHEN total_amt_usd > 200000 --add THEN statement (THEN 'top')
+          CASE WHEN total_amt_usd <= 200000 AND >= 100000 --add THEN statement (THEN 'middle')
+          ELSE 'low' END AS value_level
+FROM orders o
+JOIN accounts a
+ON o.account_id = a.id 
+GROUP BY 1
+ORDER BY 2 DESC; --rest is good
+
+          
+--We would now like to perform a similar calculation to the first, but we want to obtain the total amount spent by customers only in 2016 and 2017. 
+--Keep the same levels as in the previous question. Order with the top spending customers listed first.
+
+SELECT a.name, SUM(total_amt_usd) total_spent, 
+        CASE WHEN SUM(total_amt_usd) > 200000 THEN 'top'
+        WHEN  SUM(total_amt_usd) > 100000 THEN 'middle' --second CASE not needed, just another WHEN
+        ELSE 'low' END AS customer_level
+FROM orders o
+JOIN accounts a --we're using name from accounts a, so we need a join statement here
+ON o.account_id = a.id
+WHERE occurred_at > '2015-12-31' --after the end of 2015 is 2016 and 2017
+GROUP BY 1
+ORDER BY 2 DESC;
+
+--We would like to identify top performing sales reps, which are sales reps associated with more than 200 orders. 
+--Create a table with the sales rep name, the total number of orders, and a column with top or not depending on if they have more than 200 orders. 
+--Place the top sales people first in your final table.
+
+SELECT s.name, COUNT(*) num_ords, --creates a table with the salesrep name and counts the total orders for each sales rep
+          CASE WHEN COUNT(*) > 200 THEN 'top' --CASE WHEN statement that creates a column with top if they meet the criteria
+        ELSE 'not' END AS sales_rep_level --ELSE when a rep does not meet the criteria
+FROM orders o
+JOIN accounts a
+ON o.account_id = a.id 
+JOIN sales_reps s
+ON s.id = a.sales_rep_id
+GROUP BY s.name --we don't use 1 here as s.name is not created in the SELECT statement like something like 'total_spent'
+ORDER BY 2 DESC;
 
 
+--The previous didn't account for the middle, nor the dollar amount associated with the sales. Management decides they want to see these characteristics represented as well. 
+--We would like to identify top performing sales reps, which are sales reps associated with more than 200 orders or more than 750000 in total sales. 
+--The middle group has any rep with more than 150 orders or 500000 in sales. 
+--Create a table with the sales rep name, the total number of orders, total sales across all orders, and a column with top, middle, or low depending on this criteria. 
+--Place the top sales people based on dollar amount of sales first in your final table. You might see a few upset sales people by this criteria!
 
-
-
-
-
-
-
-
-
-
-
+SELECT s.name, COUNT(*), SUM(o.total_amt_usd) total spent,
+          CASE WHEN COUNT(*) 200 OR sales > 750000 THEN 'top' --sales should be SUM(o.total_amt_usd) 
+          WHEN COUNT(*) > 150 OR sales > 500000 THEN 'mid' --sales should be SUM(o.total_amt_usd) 
+          ELSE 'low' END AS sales_rep_level
+FROM orders o
+JOIN accounts a
+ON o.account_id = a.id 
+JOIN sales_reps s
+ON s.id = a.sales_rep_id
+GROUP BY s.name 
+ORDER BY 3 DESC; --orders by sales_rep_level
 
 
 
