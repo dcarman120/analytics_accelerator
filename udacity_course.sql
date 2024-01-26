@@ -648,15 +648,87 @@ ORDER BY 3 DESC; --orders by sales_rep_level
 
 --Subqueries
 
-SELECT channel,
-          AVG(event_count) AS avg_event_count
-FROM
-(SELECT DATE_TRUNC('day', occurred_at) AS day,
-          channel,
-          COUNT(*) as event_count
-FROM demo.web_events_full
-GROUP BY 1,2
-          ) sub
-GROUP BY 1
+--Find the number of events that occur each day for each channel
+SELECT DATE_TRUNC('day',occurred_at) AS day,
+       channel, 
+          COUNT(*) as events
+FROM web_events
+GROUP BY 1,2 --Group by day and channel
+ORDER BY 3 DESC; --Order by number of events (COUNT(*) as events)
+
+--Create a subquery that provides all the data from the above query
+SELECT *
+FROM (SELECT DATE_TRUNC('day',occurred_at) AS day,
+                channel, COUNT(*) as events
+          FROM web_events 
+          GROUP BY 1,2
+          ORDER BY 3 DESC) sub; --alias goes after the subquery, outside the parentheses
+
+--Find the average number of events for each channel
+SELECT channel, AVG(events) AS average_events
+FROM (SELECT DATE_TRUNC('day',occurred_at) AS day,
+                channel, COUNT(*) as events
+         FROM web_events 
+         GROUP BY 1,2) sub
+GROUP BY channel
 ORDER BY 2 DESC;
+
+--For subqueries, WHERE is best for 1-cell results, while IN is best for multiple results
+--Also, do not include an ilias when you write a subquery in a conditional statement.
+
+--Use DATE_TRUNC to pull month level info about the first order ever placed in the orders table
+SELECT DATE_TRUNC('month', MIN(occurred_at)) 
+FROM orders;
+
+--Use the result of the previous query to find only the orders that took place in the same month and year as the first order
+--Then, pull the average for each type of paper quantity in that month
+SELECT AVG(standard_qty) avg_std, AVG(gloss_qty) avg_gls, AVG(poster_qty) avg_pst
+FROM orders
+WHERE DATE_TRUNC('month', occurred_at) = 
+     (SELECT DATE_TRUNC('month', MIN(occurred_at)) FROM orders);
+
+SELECT SUM(total_amt_usd)
+FROM orders
+WHERE DATE_TRUNC('month', occurred_at) = 
+      (SELECT DATE_TRUNC('month', MIN(occurred_at)) FROM orders);
+
+--Provide the name of the sales_rep in each region with the largest amount of total_amt_usd sales.
+SELECT region_name, MAX (total_amt_usd) total
+FROM (
+          SELECT s.name rep_name, r.region region_name, SUM(o.total_amt_usd) total_amt
+          FROM sales_reps s
+                JOIN accounts a
+                ON a.sales_rep_id = s.id
+                JOIN orders o
+                ON o.account_id = a.id
+                JOIN region r
+                ON r.id = s.region_id
+                GROUP BY 1, 2) t1
+GROUP BY 1;
+
+--For the region with the largest (sum) of sales total_amt_usd, how many total (count) orders were placed? 
+SELECT
+FROM
+
+
+--How many accounts had more total purchases than the account name which has bought the most standard_qty paper throughout their lifetime as a customer? 
+SELECT
+FROM
+
+
+--For the customer that spent the most (in total over their lifetime as a customer) total_amt_usd, how many web_events did they have for each channel?
+SELECT
+FROM
+
+
+
+
+--What is the lifetime average amount spent in terms of total_amt_usd for the top 10 total spending accounts?
+SELECT
+FROM
+
+
+--What is the lifetime average amount spent in terms of total_amt_usd, including only the companies that spent more per order, on average, than the average of all orders.
+SELECT
+FROM
 
