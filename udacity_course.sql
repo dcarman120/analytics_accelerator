@@ -646,6 +646,17 @@ ON s.id = a.sales_rep_id
 GROUP BY s.name 
 ORDER BY 3 DESC; --orders by sales_rep_level
 
+--Subqueries
 
-
+SELECT channel,
+          AVG(event_count) AS avg_event_count
+FROM
+(SELECT DATE_TRUNC('day', occurred_at) AS day,
+          channel,
+          COUNT(*) as event_count
+FROM demo.web_events_full
+GROUP BY 1,2
+          ) sub
+GROUP BY 1
+ORDER BY 2 DESC;
 
