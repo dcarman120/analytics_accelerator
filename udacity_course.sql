@@ -877,11 +877,94 @@ GROUP BY channel
 ORDER BY 2 DESC; 
 
 
-SELECT DATE_TRUNC('day',occurred_at) AS day,  
+SELECT DATE_TRUNC('day',occurred_at) AS day,  --WITH statement inner query
        channel, COUNT(*) as events
 FROM web_events 
 GROUP BY 1,2
 
+WITH events AS ( --with statement, aliasing the table as events
+          SELECT DATE_TRUNC('day',occurred_at) AS day, 
+                        channel, COUNT(*) as events
+          FROM web_events 
+          GROUP BY 1,2)
+
+WITH events AS (
+          SELECT DATE_TRUNC('day',occurred_at) AS day, 
+                        channel, COUNT(*) as events
+          FROM web_events 
+          GROUP BY 1,2)
+
+SELECT channel, AVG(events) AS average_events
+FROM events
+GROUP BY channel
+ORDER BY 2 DESC;
+
+
+WITH table1 AS ( --in case we're creating an additional table to pull from
+          SELECT *
+          FROM web_events),
+
+     table2 AS (
+          SELECT *
+          FROM accounts)
+
+
+SELECT *
+FROM table1
+JOIN table2
+ON table1.account_id = table2.id;
+
+--Provide the name of the sales_rep in each region with the largest amount of total_amt_usd sales.
+WITH t1 AS (
+          SELECT
+          FROM
+          JOIN
+          ON
+
+
+--For the region with the largest sales total_amt_usd, how many total orders were placed? 
+WITH t1 AS (
+          SELECT
+          FROM
+          JOIN
+          ON
+
+
+
+--How many accounts had more total purchases than the account name which has bought the most standard_qty paper throughout their lifetime as a customer? 
+WITH t1 AS (
+          SELECT
+          FROM
+          JOIN
+          ON
+
+
+
+--For the customer that spent the most (in total over their lifetime as a customer) total_amt_usd, how many web_events did they have for each channel?
+WITH t1 AS (
+          SELECT
+          FROM
+          JOIN
+          ON
+
+
+
+--What is the lifetime average amount spent in terms of total_amt_usd for the top 10 total spending accounts?
+WITH t1 AS (
+          SELECT
+          FROM
+          JOIN
+          ON
+
+
+
+
+--What is the lifetime average amount spent in terms of total_amt_usd, including only the companies that spent more per order, on average, than the average of all orders.
+WITH t1 AS (
+          SELECT
+          FROM
+          JOIN
+          ON
 
 
 
